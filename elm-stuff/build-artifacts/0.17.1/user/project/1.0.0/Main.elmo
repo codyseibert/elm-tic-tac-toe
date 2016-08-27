@@ -1,0 +1,450 @@
+var _user$project$Main$getPosition = F3(
+	function (i, j, w) {
+		return {ctor: '_Tuple2', _0: i * w, _1: j * w};
+	});
+var _user$project$Main$cartesian = F2(
+	function (xs, ys) {
+		return A2(
+			_elm_lang$core$List$concatMap,
+			function (x) {
+				return A2(
+					_elm_lang$core$List$map,
+					function (y) {
+						return {ctor: '_Tuple2', _0: x, _1: y};
+					},
+					ys);
+			},
+			xs);
+	});
+var _user$project$Main$isSameCell = F2(
+	function (a, b) {
+		return _elm_lang$core$Native_Utils.eq(a.i, b.i) && _elm_lang$core$Native_Utils.eq(a.j, b.j);
+	});
+var _user$project$Main$updateBoard = F2(
+	function (newCell, cells) {
+		return A2(
+			_elm_lang$core$List$map,
+			function (c) {
+				return A2(_user$project$Main$isSameCell, newCell, c) ? newCell : c;
+			},
+			cells);
+	});
+var _user$project$Main$Cell = F4(
+	function (a, b, c, d) {
+		return {i: a, j: b, state: c, hovered: d};
+	});
+var _user$project$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {board: a, turn: b, isGameOver: c, winner: d, seed: e};
+	});
+var _user$project$Main$NewGame = {ctor: 'NewGame'};
+var _user$project$Main$CellClick = function (a) {
+	return {ctor: 'CellClick', _0: a};
+};
+var _user$project$Main$CellMouseLeave = function (a) {
+	return {ctor: 'CellMouseLeave', _0: a};
+};
+var _user$project$Main$CellMouseEnter = function (a) {
+	return {ctor: 'CellMouseEnter', _0: a};
+};
+var _user$project$Main$Player = {ctor: 'Player'};
+var _user$project$Main$Computer = {ctor: 'Computer'};
+var _user$project$Main$Blank = {ctor: 'Blank'};
+var _user$project$Main$createBoard = A2(
+	_elm_lang$core$List$map,
+	function (_p0) {
+		var _p1 = _p0;
+		return {i: _p1._0, j: _p1._1, state: _user$project$Main$Blank, hovered: false};
+	},
+	A2(
+		_user$project$Main$cartesian,
+		_elm_lang$core$Native_List.range(0, 2),
+		_elm_lang$core$Native_List.range(0, 2)));
+var _user$project$Main$initialModel = {
+	board: _user$project$Main$createBoard,
+	turn: _user$project$Main$Player,
+	isGameOver: false,
+	winner: _user$project$Main$Blank,
+	seed: _elm_lang$core$Random$initialSeed(31415)
+};
+var _user$project$Main$isBoardComplete = function (board) {
+	return _elm_lang$core$Native_Utils.eq(
+		0,
+		_elm_lang$core$List$length(
+			A2(
+				_elm_lang$core$List$filter,
+				function (c) {
+					return _elm_lang$core$Native_Utils.eq(c.state, _user$project$Main$Blank);
+				},
+				board)));
+};
+var _user$project$Main$getOpenCell = F2(
+	function (board, seed) {
+		var openCells = A2(
+			_elm_lang$core$List$filter,
+			function (c) {
+				return _elm_lang$core$Native_Utils.eq(c.state, _user$project$Main$Blank);
+			},
+			board);
+		var gen = A2(
+			_elm_lang$core$Random$int,
+			0,
+			_elm_lang$core$List$length(openCells));
+		var _p2 = A2(_elm_lang$core$Random$step, gen, seed);
+		var rnd = _p2._0;
+		var seed$ = _p2._1;
+		var randomCell = A2(
+			_elm_lang$core$Array$get,
+			rnd,
+			_elm_lang$core$Array$fromList(openCells));
+		return {ctor: '_Tuple2', _0: randomCell, _1: seed$};
+	});
+var _user$project$Main$getCellStyle = function (cell) {
+	var dim = 100;
+	var _p3 = A3(_user$project$Main$getPosition, cell.i, cell.j, dim);
+	var y = _p3._0;
+	var x = _p3._1;
+	return _elm_lang$html$Html_Attributes$style(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'left',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(x),
+					'px')
+			},
+				{
+				ctor: '_Tuple2',
+				_0: 'top',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(y),
+					'px')
+			},
+				{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				{
+				ctor: '_Tuple2',
+				_0: 'width',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(dim),
+					'px')
+			},
+				{
+				ctor: '_Tuple2',
+				_0: 'height',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(dim),
+					'px')
+			},
+				{ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
+				{ctor: '_Tuple2', _0: 'border', _1: '1px solid black'},
+				_elm_lang$core$Native_Utils.eq(cell.state, _user$project$Main$Blank) ? {ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'} : {ctor: '_Tuple2', _0: '', _1: ''},
+				{
+				ctor: '_Tuple2',
+				_0: 'line-height',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(dim),
+					'px')
+			},
+				cell.hovered ? {ctor: '_Tuple2', _0: 'background-color', _1: 'orange'} : {ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(0, 255, 0, 0.5)'}
+			]));
+};
+var _user$project$Main$C = {ctor: 'C'};
+var _user$project$Main$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(
+				_elm_lang$core$Native_List.fromArray(
+					[
+						{ctor: '_Tuple2', _0: 'position', _1: 'relative'}
+					]))
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'font-size', _1: '40px'},
+								{ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
+								{ctor: '_Tuple2', _0: 'margin-top', _1: '60px'}
+							]))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						_elm_lang$core$Native_Utils.eq(model.winner, _user$project$Main$C) ? 'Cats game!' : ((!_elm_lang$core$Native_Utils.eq(model.winner, _user$project$Main$Blank)) ? A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(model.winner),
+							' has won the game!') : (_elm_lang$core$Native_Utils.eq(model.turn, _user$project$Main$Player) ? 'It is your turn!  Please click on a cell.' : 'It is the computer\'s turn!'))),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$button,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Events$onClick(_user$project$Main$NewGame),
+										_elm_lang$html$Html_Attributes$style(
+										_elm_lang$core$Native_Utils.eq(model.isGameOver, false) ? _elm_lang$core$Native_List.fromArray(
+											[
+												{ctor: '_Tuple2', _0: 'display', _1: 'none'}
+											]) : _elm_lang$core$Native_List.fromArray(
+											[]))
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html$text('Start New Game')
+									]))
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+								{ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+								{ctor: '_Tuple2', _0: 'width', _1: '300px'},
+								{ctor: '_Tuple2', _0: 'margin-top', _1: '100px'}
+							]))
+					]),
+				A2(
+					_elm_lang$core$List$map,
+					function (cell) {
+						var cellStyle = _user$project$Main$getCellStyle(cell);
+						var cellText = function () {
+							var _p4 = cell.state;
+							switch (_p4.ctor) {
+								case 'X':
+									return 'X';
+								case 'O':
+									return 'O';
+								case 'Blank':
+									return '';
+								default:
+									return '';
+							}
+						}();
+						return A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									cellStyle,
+									_elm_lang$html$Html_Events$onMouseEnter(
+									_user$project$Main$CellMouseEnter(cell)),
+									_elm_lang$html$Html_Events$onMouseLeave(
+									_user$project$Main$CellMouseLeave(cell)),
+									_elm_lang$html$Html_Events$onClick(
+									_user$project$Main$CellClick(cell))
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text(cellText)
+								]));
+					},
+					model.board))
+			]));
+};
+var _user$project$Main$O = {ctor: 'O'};
+var _user$project$Main$placeComputerPiece = F2(
+	function (board, seed) {
+		var _p5 = A2(_user$project$Main$getOpenCell, board, seed);
+		var openCell = _p5._0;
+		var seed$ = _p5._1;
+		var _p6 = openCell;
+		if (_p6.ctor === 'Nothing') {
+			return {ctor: '_Tuple2', _0: board, _1: seed$};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: A2(
+					_user$project$Main$updateBoard,
+					_elm_lang$core$Native_Utils.update(
+						_p6._0,
+						{state: _user$project$Main$O}),
+					board),
+				_1: seed$
+			};
+		}
+	});
+var _user$project$Main$X = {ctor: 'X'};
+var _user$project$Main$getWinner = function (board) {
+	var computerCells = A2(
+		_elm_lang$core$List$map,
+		function (c) {
+			return {ctor: '_Tuple2', _0: c.i, _1: c.j};
+		},
+		A2(
+			_elm_lang$core$List$filter,
+			function (c) {
+				return _elm_lang$core$Native_Utils.eq(c.state, _user$project$Main$O);
+			},
+			board));
+	var playerCells = A2(
+		_elm_lang$core$List$map,
+		function (c) {
+			return {ctor: '_Tuple2', _0: c.i, _1: c.j};
+		},
+		A2(
+			_elm_lang$core$List$filter,
+			function (c) {
+				return _elm_lang$core$Native_Utils.eq(c.state, _user$project$Main$X);
+			},
+			board));
+	var winningDirections = _elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: 0},
+				{ctor: '_Tuple2', _0: 0, _1: 1},
+				{ctor: '_Tuple2', _0: 0, _1: 2}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 1, _1: 0},
+				{ctor: '_Tuple2', _0: 1, _1: 1},
+				{ctor: '_Tuple2', _0: 1, _1: 2}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 2, _1: 0},
+				{ctor: '_Tuple2', _0: 2, _1: 1},
+				{ctor: '_Tuple2', _0: 2, _1: 2}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: 0},
+				{ctor: '_Tuple2', _0: 1, _1: 0},
+				{ctor: '_Tuple2', _0: 2, _1: 0}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: 1},
+				{ctor: '_Tuple2', _0: 1, _1: 1},
+				{ctor: '_Tuple2', _0: 2, _1: 1}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: 2},
+				{ctor: '_Tuple2', _0: 1, _1: 2},
+				{ctor: '_Tuple2', _0: 2, _1: 2}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: 0},
+				{ctor: '_Tuple2', _0: 1, _1: 1},
+				{ctor: '_Tuple2', _0: 2, _1: 2}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 2, _1: 0},
+				{ctor: '_Tuple2', _0: 1, _1: 1},
+				{ctor: '_Tuple2', _0: 0, _1: 2}
+			])
+		]);
+	var isWinner = function (cells) {
+		return A2(
+			_elm_lang$core$List$any,
+			function (len) {
+				return _elm_lang$core$Native_Utils.eq(len, 3);
+			},
+			A2(
+				_elm_lang$core$List$map,
+				function (direction) {
+					var b = _elm_lang$core$Set$fromList(cells);
+					var a = _elm_lang$core$Set$fromList(direction);
+					var intersection = A2(_elm_lang$core$Set$intersect, a, b);
+					return _elm_lang$core$List$length(
+						_elm_lang$core$Set$toList(intersection));
+				},
+				winningDirections));
+	};
+	return isWinner(playerCells) ? _user$project$Main$X : (isWinner(computerCells) ? _user$project$Main$O : _user$project$Main$Blank);
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p7 = msg;
+		switch (_p7.ctor) {
+			case 'CellMouseEnter':
+				var _p8 = _p7._0;
+				return (_elm_lang$core$Native_Utils.eq(model.isGameOver, true) || (!_elm_lang$core$Native_Utils.eq(_p8.state, _user$project$Main$Blank))) ? model : _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						board: A2(
+							_user$project$Main$updateBoard,
+							_elm_lang$core$Native_Utils.update(
+								_p8,
+								{hovered: true}),
+							model.board)
+					});
+			case 'CellMouseLeave':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						board: A2(
+							_user$project$Main$updateBoard,
+							_elm_lang$core$Native_Utils.update(
+								_p7._0,
+								{hovered: false}),
+							model.board)
+					});
+			case 'NewGame':
+				return _user$project$Main$initialModel;
+			default:
+				var _p10 = _p7._0;
+				if ((!_elm_lang$core$Native_Utils.eq(model.turn, _user$project$Main$Player)) || (_elm_lang$core$Native_Utils.eq(model.isGameOver, true) || (!_elm_lang$core$Native_Utils.eq(_p10.state, _user$project$Main$Blank)))) {
+					return model;
+				} else {
+					var newModelState = _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							turn: _user$project$Main$Computer,
+							board: A2(
+								_user$project$Main$updateBoard,
+								_elm_lang$core$Native_Utils.update(
+									_p10,
+									{state: _user$project$Main$X, hovered: false}),
+								model.board)
+						});
+					var winner = _user$project$Main$getWinner(newModelState.board);
+					if (!_elm_lang$core$Native_Utils.eq(winner, _user$project$Main$Blank)) {
+						return _elm_lang$core$Native_Utils.update(
+							newModelState,
+							{isGameOver: true, winner: winner});
+					} else {
+						var _p9 = A2(_user$project$Main$placeComputerPiece, newModelState.board, newModelState.seed);
+						var boardAfterPlace = _p9._0;
+						var seed$ = _p9._1;
+						var afterComputerState = _elm_lang$core$Native_Utils.update(
+							model,
+							{seed: seed$, board: boardAfterPlace, turn: _user$project$Main$Player});
+						var winner = _user$project$Main$getWinner(afterComputerState.board);
+						return _user$project$Main$isBoardComplete(afterComputerState.board) ? _elm_lang$core$Native_Utils.update(
+							afterComputerState,
+							{isGameOver: true, winner: _user$project$Main$C}) : ((!_elm_lang$core$Native_Utils.eq(winner, _user$project$Main$Blank)) ? _elm_lang$core$Native_Utils.update(
+							afterComputerState,
+							{isGameOver: true, winner: winner}) : afterComputerState);
+					}
+				}
+		}
+	});
+var _user$project$Main$main = {
+	main: _elm_lang$html$Html_App$beginnerProgram(
+		{model: _user$project$Main$initialModel, view: _user$project$Main$view, update: _user$project$Main$update})
+};
